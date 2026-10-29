@@ -6066,7 +6066,8 @@
               "fr",
               "de",
               "uk",
-              "pl"
+              "pl",
+              "ko"
             ],
             "title": "Language",
             "type": "string"
@@ -13287,7 +13288,8 @@
                   "fr",
                   "de",
                   "uk",
-                  "pl"
+                  "pl",
+                  "ko"
                 ],
                 "type": "string"
               },
