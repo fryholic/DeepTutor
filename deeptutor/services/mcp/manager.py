@@ -33,6 +33,7 @@ import asyncio
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
 import hashlib
+import json
 import logging
 import re
 from typing import Any
@@ -83,6 +84,14 @@ class ConnectionLost(RuntimeError):
 def _connection_lost_result(server_name: str, exc: BaseException) -> str:
     """What the model is told when the transport died under its tool call."""
     return f"(MCP server {server_name!r} connection failed during the call: {exc})"
+
+
+def _serializes(text: str, value: Any) -> bool:
+    """Whether ``text`` is ``value`` serialized as JSON."""
+    try:
+        return json.loads(text) == value
+    except ValueError:
+        return False
 
 
 # The literal prefix of ``secrets.SECRET_REFERENCE_RE``. Kept as a plain string
@@ -563,13 +572,22 @@ class MCPConnectionManager:
             timeout=timeout,
         )
         parts: list[str] = []
+        texts: list[str] = []
         for block in result.content:
             if isinstance(block, types.TextContent):
                 parts.append(block.text)
+                texts.append(block.text)
             elif isinstance(block, types.ImageContent):
                 parts.append("[MCP image omitted]")
             else:
                 parts.append(str(block))
+        # Servers may put the result itself only in ``structuredContent`` and
+        # leave the text blocks as a short note; the spec merely recommends
+        # also serializing it as text. Forward it unless a text block already
+        # carries the same JSON, so the model sees the data either way.
+        structured = result.structuredContent
+        if structured is not None and not any(_serializes(text, structured) for text in texts):
+            parts.append(json.dumps(structured, ensure_ascii=False))
         return "\n".join(parts) or "(no output)"
 
     # ── connection internals ───────────────────────────────────────────

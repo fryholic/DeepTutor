@@ -227,6 +227,40 @@ async def test_image_content_is_omitted_without_serializing_base64() -> None:
     assert "QUJD" not in result.content
 
 
+@pytest.mark.asyncio
+async def test_structured_content_reaches_the_model_when_text_is_only_a_note() -> None:
+    """Some servers return the data only in ``structuredContent``."""
+
+    class _StructuredSession(_Session):
+        async def call_tool(self, tool_name, arguments, progress_callback=None):  # type: ignore[no-untyped-def]
+            from mcp import types
+
+            return types.CallToolResult(
+                content=[types.TextContent(type="text", text="2 results")],
+                structuredContent={"results": [{"title": "5.1.1 인증서 내용"}]},
+            )
+
+    result = await _adapter(MCPConnectionManager(), _StructuredSession()).execute()
+
+    assert result.content == '2 results\n{"results": [{"title": "5.1.1 인증서 내용"}]}'
+
+
+@pytest.mark.asyncio
+async def test_structured_content_already_serialized_as_text_is_not_repeated() -> None:
+    class _MirroredSession(_Session):
+        async def call_tool(self, tool_name, arguments, progress_callback=None):  # type: ignore[no-untyped-def]
+            from mcp import types
+
+            return types.CallToolResult(
+                content=[types.TextContent(type="text", text='{"ok": true}')],
+                structuredContent={"ok": True},
+            )
+
+    result = await _adapter(MCPConnectionManager(), _MirroredSession()).execute()
+
+    assert result.content == '{"ok": true}'
+
+
 # ── why a connection failed ────────────────────────────────────────────────
 
 
