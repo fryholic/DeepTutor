@@ -43,6 +43,7 @@ const labels: Record<string, string> = {
   timed_media: 'Immersive Watching',
   notebook: 'settings.dataMigration.feature.notebooks',
   'co-writer': 'Writing',
+  courses: 'Curriculum',
   learning_journal: 'Learning journal',
   files: 'File library',
   knowledge_bases: 'Knowledge bases',
