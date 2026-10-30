@@ -10,12 +10,11 @@ import { FeatureCrumb } from '@/components/layout/LocationCrumbs'
 import { locatePage, pageSections } from './page-sections'
 
 function useShelves() {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
   const { learningPolicy } = useAuthStatus()
   const isAvailable = useCapabilityFilter()
   return pageSections({
     t,
-    zh: (i18n?.language ?? '').startsWith('zh'),
     allowedSurfaces: learningPolicy?.allowedSurfaces ?? null,
     isAvailable,
   })

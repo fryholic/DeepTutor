@@ -34,25 +34,26 @@ type Operation = {
   recovery_path?: string
 }
 const endpoint = '/api/settings/workspace/data'
-const labels: Record<string, [string, string]> = {
-  chat: ['Conversations', '对话'],
-  book: ['Books', '书籍'],
-  learning: ['Mastery Path', '掌握路径'],
-  reading: ['Immersive Reading', '沉浸式阅读'],
-  timed_media: ['Immersive Watching', '沉浸式观看'],
-  notebook: ['Notebooks', '笔记本'],
-  'co-writer': ['Writing', '协作写作'],
-  learning_journal: ['Learning journal', '学习日志'],
-  files: ['File library', '文件库'],
-  knowledge_bases: ['Knowledge bases', '知识库'],
-  parse_cache: ['Document cache', '文档解析缓存'],
-  outputs: ['Generated outputs', '生成产物'],
-  presentations: ['Presented files', '已展示文件'],
-  attachments: ['Conversation attachments', '对话附件'],
-  historical_chat: ['Historical conversation database', '历史对话数据库'],
-  historical_agent: ['Historical agent outputs', '历史智能体产物'],
-  historical_output: ['Historical output folder', '历史输出目录'],
-  historical_archive: ['Historical archives', '历史归档'],
+/** i18n keys for each migratable feature. */
+const labels: Record<string, string> = {
+  chat: 'settings.dataMigration.feature.conversations',
+  book: 'Books',
+  learning: 'settings.dataMigration.feature.masteryPath',
+  reading: 'Immersive Reading',
+  timed_media: 'Immersive Watching',
+  notebook: 'settings.dataMigration.feature.notebooks',
+  'co-writer': 'Writing',
+  learning_journal: 'Learning journal',
+  files: 'File library',
+  knowledge_bases: 'Knowledge bases',
+  parse_cache: 'Document cache',
+  outputs: 'Generated outputs',
+  presentations: 'Presented files',
+  attachments: 'Conversation attachments',
+  historical_chat: 'Historical conversation database',
+  historical_agent: 'Historical agent outputs',
+  historical_output: 'Historical output folder',
+  historical_archive: 'Historical archives',
 }
 
 async function request<T>(path: string, body?: object): Promise<T> {
@@ -72,9 +73,8 @@ async function request<T>(path: string, body?: object): Promise<T> {
 }
 
 export default function DataMigrationSettingsSection() {
-  const { i18n } = useTranslation()
-  const zh = i18n.language.startsWith('zh')
-  const text = (en: string, cn: string) => (zh ? cn : en)
+  const { t, i18n } = useTranslation()
+  const listSeparator = i18n.language.startsWith('zh') ? '、' : ', '
   const { workspaces } = useChatWorkspaces()
   const [source, setSource] = useState(activeWorkspaceId)
   const [target, setTarget] = useState('')
@@ -85,14 +85,14 @@ export default function DataMigrationSettingsSection() {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [historical, setHistorical] = useState(false)
-  const label = (key: string) => labels[key]?.[zh ? 1 : 0] ?? key
+  const label = (key: string) => (labels[key] ? t(labels[key]) : key)
   const statusLabel = (key: string) => ({
-    preparing: text('Preparing', '准备中'), copying: text('Copying', '复制中'),
-    transferring: text('Transferring', '迁移中'), committed: text('Finishing', '收尾中'),
-    completed: text('Completed', '已完成'), exported: text('Exported', '已导出'),
-    recovered: text('Recovered', '已恢复'), failed: text('Failed; source retained', '失败，来源数据已保留'),
-    cleanup_required: text('Cleanup required', '需要完成清理'),
-    recovery_required: text('Recovery required', '需要恢复'),
+    preparing: t('settings.dataMigration.status.preparing'), copying: t('Copying'),
+    transferring: t('Transferring'), committed: t('Finishing'),
+    completed: t('Completed'), exported: t('Exported'),
+    recovered: t('Recovered'), failed: t('Failed; source retained'),
+    cleanup_required: t('Cleanup required'),
+    recovery_required: t('Recovery required'),
   }[key] || key)
   const input = {
     source_workspace_id: source,
@@ -174,7 +174,7 @@ export default function DataMigrationSettingsSection() {
   }
   const options = (
     <>
-      <option value="">{text('Default workspace', '默认工作区')}</option>
+      <option value="">{t('Default workspace')}</option>
       {workspaces
         .filter(row => !row.archived)
         .map(row => (
@@ -186,31 +186,22 @@ export default function DataMigrationSettingsSection() {
   )
   return (
     <section className="space-y-5">
-      <h2 className="text-lg font-semibold">{text('Data migration', '数据迁移')}</h2>
+      <h2 className="text-lg font-semibold">{t('Data migration')}</h2>
       <p className="text-sm leading-relaxed text-[var(--muted-foreground)]">
-        {text(
-          'Discover stored learning data, move it with its related conversations, or download an archive. Verified recovery copies are retained after migration.',
-          '查找已有学习数据，将资料和关联对话一并迁移，或下载备份。迁移后会保留经过校验的恢复副本。'
-        )}
+        {t('Discover stored learning data, move it with its related conversations, or download an archive. Verified recovery copies are retained after migration.')}
       </p>
       <p className="text-sm leading-relaxed text-[var(--muted-foreground)]">
-        {text(
-          'Learning data moves as a complete feature bundle. Preview includes related sources and conversations. Choose a destination with no existing data for these features.',
-          '学习数据按功能整体迁移，预览会列出关联资料和对话。目标工作区中对应功能应为空，以免覆盖已有学习记录。'
-        )}
+        {t('Learning data moves as a complete feature bundle. Preview includes related sources and conversations. Choose a destination with no existing data for these features.')}
       </p>
       {selected.some(key => key.startsWith('historical_')) ? (
         <p className="text-sm text-[var(--muted-foreground)]">
-          {text(
-            'Historical data is retained as an archive inside the destination workspace. It is not automatically merged into current learning records.',
-            '历史数据将作为档案保存在目标工作区内，不会自动合并到当前学习记录。'
-          )}
+          {t('Historical data is retained as an archive inside the destination workspace. It is not automatically merged into current learning records.')}
         </p>
       ) : null}
       <fieldset disabled={busy} className="space-y-4 disabled:opacity-60">
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="space-y-2 text-sm">
-            <span>{text('Source workspace', '来源工作区')}</span>
+            <span>{t('Source workspace')}</span>
             <select
               value={source}
               onChange={event => setSource(event.target.value)}
@@ -220,7 +211,7 @@ export default function DataMigrationSettingsSection() {
             </select>
           </label>
           <label className="space-y-2 text-sm">
-            <span>{text('Destination workspace', '目标工作区')}</span>
+            <span>{t('Destination workspace')}</span>
             <select
               value={target}
               onChange={event => setTarget(event.target.value)}
@@ -233,7 +224,7 @@ export default function DataMigrationSettingsSection() {
         <div className="divide-y divide-[var(--border)] rounded-xl border border-[var(--border)]">
           {!discovery ? (
             <p className="p-4 text-sm" aria-busy="true">
-              {text('Searching stored data…', '正在查找已有数据…')}
+              {t('Searching stored data…')}
             </p>
           ) : (
             discovery.features.map(row => (
@@ -255,9 +246,9 @@ export default function DataMigrationSettingsSection() {
                   <span className="block text-sm font-medium">{label(row.feature)}</span>
                   <span className="block text-xs text-[var(--muted-foreground)]">
                     {row.sessions !== undefined
-                      ? `${row.sessions} ${text('conversations', '个对话')} · `
+                      ? `${row.sessions} ${t('conversations')} · `
                       : ''}
-                    {row.files} {text('files', '个文件')} · {(row.bytes / 1024 / 1024).toFixed(1)}{' '}
+                    {row.files} {t('files')} · {(row.bytes / 1024 / 1024).toFixed(1)}{' '}
                     MB
                   </span>
                   <span className="mt-1 block break-all text-[11px] text-[var(--muted-foreground)]">
@@ -271,13 +262,10 @@ export default function DataMigrationSettingsSection() {
         {discovery?.historical.length ? (
           <details className="rounded-lg border border-[var(--border)] p-3 text-sm">
             <summary>
-              {text('Additional historical data', '其他历史数据')} ({discovery.historical.length})
+              {t('Additional historical data')} ({discovery.historical.length})
             </summary>
             <p className="my-2 text-xs text-[var(--muted-foreground)]">
-              {text(
-                'Historical archives can be included in exports for recovery and inspection.',
-                '可在导出中包含这些历史目录，便于检查和恢复。'
-              )}
+              {t('Historical archives can be included in exports for recovery and inspection.')}
             </p>
             {discovery.historical.map(row => (
               <p key={row.path} className="break-all text-xs">
@@ -290,7 +278,7 @@ export default function DataMigrationSettingsSection() {
                 checked={historical}
                 onChange={event => setHistorical(event.target.checked)}
               />
-              {text('Include in export', '导出时包含历史目录')}
+              {t('Include in export')}
             </label>
           </details>
         ) : null}
@@ -301,7 +289,7 @@ export default function DataMigrationSettingsSection() {
             className="inline-flex items-center gap-2 rounded-lg border border-[var(--border)] px-3 py-2 text-sm disabled:opacity-40"
           >
             <RefreshCw size={14} />
-            {text('Preview migration', '预览迁移')}
+            {t('Preview migration')}
           </button>
           <button
             disabled={!selected.length}
@@ -309,25 +297,22 @@ export default function DataMigrationSettingsSection() {
             className="inline-flex items-center gap-2 rounded-lg border border-[var(--border)] px-3 py-2 text-sm disabled:opacity-40"
           >
             <Download size={14} />
-            {text('Export selected data', '导出所选数据')}
+            {t('Export selected data')}
           </button>
         </div>
         {preview ? (
           <div className="space-y-3 rounded-xl border border-[var(--border)] p-4">
             <p className="text-sm">
-              {preview.sessions} {text('conversations', '个对话')} · {preview.files}{' '}
-              {text('files', '个文件')} · {(preview.bytes / 1024 / 1024).toFixed(1)} MB
+              {preview.sessions} {t('conversations')} · {preview.files}{' '}
+              {t('files')} · {(preview.bytes / 1024 / 1024).toFixed(1)} MB
             </p>
             <p className="text-sm">
-              {text('Included features', '包含功能')}: {preview.features.map(label).join('、')}
+              {t('Included features')}: {preview.features.map(label).join(listSeparator)}
             </p>
             {preview.dependencies.length ? (
               <p className="text-xs text-[var(--muted-foreground)]">
-                {text(
-                  'Related source data included to preserve references',
-                  '为保留引用，额外包含关联来源数据'
-                )}
-                : {preview.dependencies.map(label).join('、')}
+                {t('Related source data included to preserve references')}
+                : {preview.dependencies.map(label).join(listSeparator)}
               </p>
             ) : null}
             {preview.blockers.map((reason, i) => (
@@ -341,17 +326,14 @@ export default function DataMigrationSettingsSection() {
               className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-3 py-2 text-sm text-[var(--primary-foreground)] disabled:opacity-40"
             >
               <FolderInput size={14} />
-              {text('Migrate these data', '迁移以上数据')}
+              {t('Migrate these data')}
             </button>
           </div>
         ) : null}
       </fieldset>
       {busy ? (
         <p role="status" className="text-sm">
-          {text(
-            'Processing. You can return to this page to view the result.',
-            '正在处理。可以稍后回到此页查看结果。'
-          )}
+          {t('Processing. You can return to this page to view the result.')}
         </p>
       ) : null}
       {error ? (
@@ -361,7 +343,7 @@ export default function DataMigrationSettingsSection() {
       ) : null}
       {operations.length ? (
         <div className="space-y-3">
-          <h3 className="text-sm font-medium">{text('Recent operations', '最近操作')}</h3>
+          <h3 className="text-sm font-medium">{t('Recent operations')}</h3>
           {operations.slice(0, 10).map(row => (
             <div
               key={row.id}
@@ -377,7 +359,7 @@ export default function DataMigrationSettingsSection() {
                   className="inline-flex items-center gap-1 text-[var(--primary)]"
                 >
                   <Download size={12} />
-                  {text('Download archive', '下载备份')}
+                  {t('Download archive')}
                 </a>
               ) : null}
               {!['completed', 'exported', 'recovered'].includes(row.status) ? (
@@ -386,12 +368,12 @@ export default function DataMigrationSettingsSection() {
                   onClick={() => void recover(row.id)}
                   className="rounded border border-[var(--border)] px-2 py-1"
                 >
-                  {text('Recover migration', '恢复迁移')}
+                  {t('Recover migration')}
                 </button>
               ) : null}
               {row.recovery_path ? (
                 <p className="break-all text-[var(--muted-foreground)]">
-                  {text('Recovery copy', '恢复副本')}: {row.recovery_path}
+                  {t('Recovery copy')}: {row.recovery_path}
                 </p>
               ) : null}
             </div>

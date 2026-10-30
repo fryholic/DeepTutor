@@ -1,7 +1,7 @@
 "use client";
 
 import { PageHeader, PAGE_SECTION_TITLE_CLASS, pageGridClass } from '@/components/layout/FeaturePage'
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
 import { useUiLayoutLabel } from "@/features/ui-layout/tokens";
@@ -16,7 +16,6 @@ import {
   visibleGroups,
   type DashboardGroup,
   type DashboardItem,
-  type Lang,
   type DashKey,
 } from "@/components/space/dashboard-groups";
 
@@ -46,10 +45,8 @@ export default function SpaceDashboard({
   groups?: DashboardGroup[];
   onNavigate?: (href: string) => void;
 } = {}) {
-  const { i18n } = useTranslation();
+  const { t } = useTranslation();
   const spaceLabel = useUiLayoutLabel("space");
-  const zh = i18n.language?.toLowerCase().startsWith("zh");
-  const tr = useCallback((l: Lang) => (zh ? l.zh : l.en), [zh]);
 
   const [counts, setCounts] = useState<Partial<Record<DashKey, number>>>({});
 
@@ -84,17 +81,14 @@ export default function SpaceDashboard({
       <PageHeader
         icon={icon}
         title={title ?? spaceLabel}
-        description={description ?? tr({
-            zh: "你的对话、智能体、笔记与题目，集中在一处 —— 从这里进入。",
-            en: "Your conversations, agents, notebooks, and questions in one place — enter from here.",
-          })}
+        description={description ?? t('Your conversations, agents, notebooks, and questions in one place — enter from here.')}
       />
 
       <div className="space-y-9">
         {groups.map(group => (
-          <section key={group.label.en}>
+          <section key={group.label}>
             <h2 className={`mb-3 ${PAGE_SECTION_TITLE_CLASS}`}>
-              {tr(group.label)}
+              {t(group.label)}
             </h2>
             <div className={pageGridClass(2)}>
               {group.items.map(item => (
@@ -103,7 +97,6 @@ export default function SpaceDashboard({
                   item={item}
                   count={counts[item.key]}
                   onNavigate={onNavigate}
-                  tr={tr}
                 />
               ))}
             </div>
@@ -117,14 +110,13 @@ export default function SpaceDashboard({
 function DashboardCard({
   item,
   count,
-  tr,
   onNavigate,
 }: {
   item: DashboardItem;
   count: number | undefined;
   onNavigate?: (href: string) => void;
-  tr: (l: Lang) => string;
 }) {
+  const { t } = useTranslation();
   const Icon = item.icon;
   const loaded = count !== undefined;
   const formatted = useMemo(
@@ -150,7 +142,7 @@ function DashboardCard({
         </span>
         <div className="min-w-0 flex-1">
           <h3 className="truncate text-[14.5px] font-medium leading-tight tracking-tight text-[var(--foreground)]">
-            {tr(item.title)}
+            {t(item.title)}
           </h3>
           {item.unit ? (
             <div className="mt-1 flex items-baseline gap-1.5">
@@ -160,7 +152,7 @@ function DashboardCard({
                     {formatted}
                   </span>
                   <span className="text-[12px] text-[var(--muted-foreground)]">
-                    {tr(item.unit)}
+                    {t(item.unit)}
                   </span>
                 </>
               ) : (
@@ -175,7 +167,7 @@ function DashboardCard({
         />
       </div>
       <p className="mt-3 text-[12.5px] leading-relaxed text-[var(--muted-foreground)]">
-        {tr(item.blurb)}
+        {t(item.blurb)}
       </p>
       {item.credit ? (
         <span className="mt-2.5 inline-flex items-center gap-1 self-start text-[11px] leading-none text-[var(--muted-foreground)] opacity-60">

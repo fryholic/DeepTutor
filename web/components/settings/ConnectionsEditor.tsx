@@ -39,15 +39,16 @@ import { inputClass, selectClass, selectOptionClass } from "./shared";
  * who want a different key per service simply never make a connection.
  */
 
-const SERVICE_LABEL: Record<ServiceName, { en: string; zh: string }> = {
-  llm: { en: "LLM", zh: "LLM" },
-  task: { en: "Task model", zh: "任务模型" },
-  embedding: { en: "Embedding", zh: "嵌入模型" },
-  search: { en: "Search", zh: "搜索" },
-  tts: { en: "Text-to-Speech", zh: "语音合成" },
-  stt: { en: "Speech-to-Text", zh: "语音识别" },
-  imagegen: { en: "Image", zh: "文生图" },
-  videogen: { en: "Video", zh: "文生视频" },
+/** i18n keys for each service's short name. */
+const SERVICE_LABEL: Record<ServiceName, string> = {
+  llm: "LLM",
+  task: "Task model",
+  embedding: "Embedding",
+  search: "Search",
+  tts: "Text-to-Speech",
+  stt: "Speech-to-Text",
+  imagegen: "settings.connections.imageService",
+  videogen: "settings.connections.videoService",
 };
 
 const SERVICE_HREF: Record<ServiceName, string> = {
@@ -150,8 +151,7 @@ export function ConnectionsEditor() {
     );
   }
 
-  const label = (service: ServiceName) =>
-    zh ? SERVICE_LABEL[service].zh : SERVICE_LABEL[service].en;
+  const label = (service: ServiceName) => t(SERVICE_LABEL[service]);
 
   return (
     <div>
@@ -520,8 +520,7 @@ function AddConnectionPanel({
     services: { service: ServiceName; model: string }[],
   ) => void;
 }) {
-  const { t, i18n } = useTranslation();
-  const zh = i18n.language?.toLowerCase().startsWith("zh");
+  const { t } = useTranslation();
   const [provider, setProvider] = useState("");
   const [apiKey, setApiKey] = useState("");
   const [baseUrl, setBaseUrl] = useState("");
@@ -534,8 +533,7 @@ function AddConnectionPanel({
     (service) => target?.services[service],
   );
 
-  const label = (service: ServiceName) =>
-    zh ? SERVICE_LABEL[service].zh : SERVICE_LABEL[service].en;
+  const label = (service: ServiceName) => t(SERVICE_LABEL[service]);
 
   const choose = (next: string) => {
     setProvider(next);
