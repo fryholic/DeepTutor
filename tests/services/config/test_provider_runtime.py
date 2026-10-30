@@ -842,6 +842,35 @@ def test_llm_codebuddy_resolves_without_endpoint() -> None:
     assert resolved.effective_url is None
 
 
+def _claude_code_catalog(model: dict) -> dict:
+    return _build_catalog(
+        llm_profile={
+            "id": "llm-p",
+            "name": "Claude Code",
+            "binding": "claude_code",
+            "base_url": "",
+            "api_key": "",
+            "api_version": "",
+            "extra_headers": {},
+            "models": [{"id": "llm-m", "name": "Claude Code", **model}],
+        }
+    )
+
+
+def test_llm_claude_code_alias_gets_a_real_context_window() -> None:
+    """``default`` must not fall to the 16k fallback that snips tool results."""
+    resolved = resolve_llm_runtime_config(catalog=_claude_code_catalog({"model": "default"}))
+
+    assert resolved.provider_name == "claude_code"
+    assert resolved.context_window == 200_000
+
+
+def test_llm_claude_code_catalog_window_still_wins() -> None:
+    catalog = _claude_code_catalog({"model": "opus[1m]", "context_window": 300_000})
+
+    assert resolve_llm_runtime_config(catalog=catalog).context_window == 300_000
+
+
 def test_llm_context_window_passes_through_from_catalog() -> None:
     catalog = _build_catalog(
         llm_profile={

@@ -158,6 +158,28 @@ def known_context_window(model: str) -> int | None:
     return None
 
 
+#: Model aliases the Claude Code CLI accepts for ``--model``. The CLI resolves
+#: them to the account's current model, so no versioned ID ever reaches the
+#: table above; left alone, ``default`` falls to the 16k fallback and the
+#: agentic loop snips every tool result. ``[1m]`` opts into the 1M window.
+CLAUDE_CODE_MODEL_ALIASES = frozenset({"default", "opus", "sonnet", "haiku", "opusplan"})
+CLAUDE_CODE_ALIAS_CONTEXT_WINDOW = 200_000
+CLAUDE_CODE_EXTENDED_CONTEXT_WINDOW = 1_000_000
+
+
+def claude_code_context_window(model: str) -> int | None:
+    """Window for a Claude Code model alias or ID, or ``None`` when unknown."""
+    name = (model or "").strip().lower()
+    prefix, _, rest = name.partition("/")
+    if rest and prefix.replace("-", "_") == "claude_code":
+        name = rest
+    if name.endswith("[1m]"):
+        return CLAUDE_CODE_EXTENDED_CONTEXT_WINDOW
+    if name in CLAUDE_CODE_MODEL_ALIASES:
+        return CLAUDE_CODE_ALIAS_CONTEXT_WINDOW
+    return known_context_window(name)
+
+
 def coerce_positive_int(value: Any) -> int | None:
     """Parse a positive integer from arbitrary input."""
     try:
@@ -207,10 +229,14 @@ def resolve_effective_context_window(
 
 
 __all__ = [
+    "CLAUDE_CODE_ALIAS_CONTEXT_WINDOW",
+    "CLAUDE_CODE_EXTENDED_CONTEXT_WINDOW",
+    "CLAUDE_CODE_MODEL_ALIASES",
     "DEFAULT_CONTEXT_WINDOW_FALLBACK",
     "MAX_EFFECTIVE_CONTEXT_WINDOW",
     "LARGE_CONTEXT_MODEL_DEFAULT",
     "KNOWN_LARGE_CONTEXT_MARKERS",
+    "claude_code_context_window",
     "coerce_positive_int",
     "default_context_window_for_model",
     "looks_like_large_context_model",

@@ -944,6 +944,12 @@ def resolve_llm_runtime_config(
     if not api_key and spec.is_local:
         api_key = "sk-no-key-required"
     extra_headers = active_extra_headers or ((mapped.extra_headers or {}) if mapped else {})
+    if context_window is None and spec.name == "claude_code":
+        # Claude Code takes CLI aliases (``default``, ``opus``) that no model
+        # table knows. Imported lazily for the same cycle as below.
+        from deeptutor.services.llm.context_window import claude_code_context_window
+
+        context_window = claude_code_context_window(resolved_model)
     _register_catalog_capabilities(loaded)
 
     return ResolvedLLMConfig(
