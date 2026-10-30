@@ -17,11 +17,9 @@ import { TEACH_FIRST_PROFILE_LABEL } from "./next-step-copy";
  * here would be a second writer with no way to do that second half.
  */
 export function LearnerProfileCard({ profile }: { profile: LearnerProfile | null }) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const teachFirst = profile?.teaching_strategy === "teach_first"
-    ? i18n.language?.toLowerCase().startsWith("zh")
-      ? TEACH_FIRST_PROFILE_LABEL.zh
-      : TEACH_FIRST_PROFILE_LABEL.en
+    ? t(TEACH_FIRST_PROFILE_LABEL)
     : "";
   const teachingPreference = [profile?.preferences?.trim(), teachFirst]
     .filter(Boolean)

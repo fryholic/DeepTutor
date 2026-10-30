@@ -44,12 +44,10 @@ export interface PageSection {
  */
 export function pageSections({
   t,
-  zh,
   allowedSurfaces,
   isAvailable,
 }: {
   t: (key: string) => string
-  zh: boolean
   allowedSurfaces: readonly string[] | null
   isAvailable: ((name: string) => boolean) | null
 }): PageSection[] {
@@ -57,7 +55,7 @@ export function pageSections({
     !allowedSurfaces || allowedSurfaces.includes(kind === 'mastery' || kind === 'practice' ? 'chat' : kind)
   const shelf = (groups: DashboardGroup[]) =>
     visibleGroups(groups, isAvailable).flatMap(group =>
-      group.items.map(item => ({ href: item.href, label: zh ? item.title.zh : item.title.en, icon: item.icon }))
+      group.items.map(item => ({ href: item.href, label: t(item.title), icon: item.icon }))
     )
   const sections: PageSection[] = [
     {
@@ -152,7 +150,7 @@ function ownerOf(pathname: string, sections: PageSection[], workspaceOnly = fals
   return owner
 }
 
-const EVERY_PAGE = pageSections({ t: key => key, zh: false, allowedSurfaces: null, isAvailable: () => true })
+const EVERY_PAGE = pageSections({ t: key => key, allowedSurfaces: null, isAvailable: () => true })
 
 /**
  * Where a workspace switch lands: the same page, or the index page the

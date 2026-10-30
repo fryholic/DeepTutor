@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { locatePage, pageSections, switchDestination } from '@/components/sidebar/page-sections'
 
 const sections = (allowedSurfaces: string[] | null = null) =>
-  pageSections({ t: key => key, zh: false, allowedSurfaces, isAvailable: () => false })
+  pageSections({ t: key => key, allowedSurfaces, isAvailable: () => false })
 
 describe('page sections', () => {
   it('places each index page in the shelf the sidebar shows it under', () => {

@@ -16,7 +16,6 @@ import type {
   CatalogProfile,
   ServiceName,
 } from "@/features/settings/store/SettingsStore";
-import type { AppLanguage } from "@/i18n/init";
 
 /** Provider disclosure rows contain connection fields and their model cards.
  * Opening an editor and selecting a runtime model are separate actions;
@@ -368,7 +367,6 @@ export function ProfileCard({
 export function ModelCard({
   model,
   service,
-  language,
   index,
   inUse,
   expanded,
@@ -386,7 +384,6 @@ export function ModelCard({
   model: CatalogModel;
   editorId?: string;
   service: ServiceName;
-  language: AppLanguage;
   index: number;
   inUse: boolean;
   expanded: boolean;
@@ -403,7 +400,7 @@ export function ModelCard({
   const { t } = useTranslation();
   const name =
     (model.name || "").trim() ||
-    (language === "zh" ? `模型 ${index + 1}` : `Model ${index + 1}`);
+    t("Model {{index}}", { index: index + 1 });
   const detail =
     service === "llm"
       ? model.context_window

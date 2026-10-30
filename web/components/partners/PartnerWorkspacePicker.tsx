@@ -21,13 +21,12 @@ export default function PartnerWorkspacePicker({
   disabled?: boolean;
   partnerId?: string;
 }) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const id = useId();
   const [rows, setRows] = useState<ChatWorkspaceRegistration[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [attempt, setAttempt] = useState(0);
-  const zh = i18n.language.startsWith("zh");
 
   useEffect(() => {
     let active = true;
@@ -78,7 +77,7 @@ export default function PartnerWorkspacePicker({
           );
           onChange(
             event.target.value,
-            row ? workspaceLabel(row, zh) : t("Partner private workspace"),
+            row ? workspaceLabel(row, t) : t("Partner private workspace"),
           );
         }}
         className="w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-3 py-2.5 text-[13px] text-[var(--foreground)] disabled:opacity-50"
@@ -91,7 +90,7 @@ export default function PartnerWorkspacePicker({
         )}
         {rows.map((row) => (
           <option key={row.workspace_id} value={row.workspace_id}>
-            {workspaceLabel(row, zh)}
+            {workspaceLabel(row, t)}
           </option>
         ))}
       </select>

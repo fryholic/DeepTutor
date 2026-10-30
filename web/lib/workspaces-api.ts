@@ -155,9 +155,12 @@ export function getSystemWorkspaceSnapshot(): Promise<SystemWorkspaceSnapshot> {
   return request<SystemWorkspaceSnapshot>(`${endpoint}/system-snapshot`, { method: 'POST' })
 }
 
-export function workspaceLabel(row: ChatWorkspaceRegistration, zh: boolean): string {
-  if (row.kind === 'system') return zh ? '系统工作区' : 'System workspace'
-  if (row.kind === 'general') return zh ? '通用工作区' : 'General workspace'
+export function workspaceLabel(
+  row: ChatWorkspaceRegistration,
+  t: (key: string) => string
+): string {
+  if (row.kind === 'system') return t('System workspace')
+  if (row.kind === 'general') return t('General workspace')
   return row.display_name
 }
 

@@ -66,7 +66,6 @@ import {
   selectOptionClass,
   stringifyExtraHeaders,
 } from "./shared";
-import type { AppLanguage } from "@/i18n/init";
 
 // The protocol an endpoint speaks. Labels and hints are keyed by the backend
 // value so the select never invents a format the registry does not know.
@@ -116,7 +115,6 @@ export function ServiceConfigEditor({
     catalogEditable,
     settingsError,
     providers,
-    language,
     embeddingDefaultDim,
     mutateCatalog,
     addProfile,
@@ -472,7 +470,7 @@ export function ServiceConfigEditor({
     const fallbackIndex =
       activeProfile?.models.findIndex((model) => model.id === modelId) ??
       -1;
-    const fallbackName = defaultModelLabel(language, fallbackIndex + 1);
+    const fallbackName = defaultModelLabel(t, fallbackIndex + 1);
     const nextName = editingModelName.trim() || fallbackName;
     mutateCatalog((next) => {
       const profile = next.services[service].profiles.find(
@@ -707,7 +705,7 @@ export function ServiceConfigEditor({
                                 profile.models = [
                                   {
                                     id: modelId,
-                                    name: defaultModelLabel(language, 1),
+                                    name: defaultModelLabel(t, 1),
                                     model: "",
                                   },
                                 ];
@@ -807,7 +805,6 @@ export function ServiceConfigEditor({
                                   model={model}
                                   editorId={modelEditorId}
                                   service={service}
-                                  language={language}
                                   index={index}
                                   inUse={
                                     openedProfile.id === inUseProfileId &&
@@ -1342,15 +1339,11 @@ export function ServiceConfigEditor({
   );
 }
 
-function defaultModelLabel(language: AppLanguage, index: number): string {
-  const safeIndex = index > 0 ? index : 1;
-  return language === "zh"
-    ? `模型${safeIndex}`
-    : language === "fr"
-      ? `Modèle ${safeIndex}`
-      : language === "de"
-        ? `Modell ${safeIndex}`
-        : `Model ${safeIndex}`;
+function defaultModelLabel(
+  t: (key: string, options: { index: number }) => string,
+  index: number,
+): string {
+  return t("settings.models.defaultName", { index: index > 0 ? index : 1 });
 }
 
 function formatCompactTokens(value: string | number | undefined): string {

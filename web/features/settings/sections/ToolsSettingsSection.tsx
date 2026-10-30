@@ -68,11 +68,11 @@ type ToolSection = {
   tools: BuiltinTool[];
 };
 
-// Display labels for capability-owned tool sections, keyed by the backend's
-// capability id. Falls back to the raw id for any unmapped capability.
-const CAPABILITY_LABELS: Record<string, { zh: string; en: string }> = {
-  solve: { zh: "深度解题", en: "Deep Solve" },
-  mastery: { zh: "精通路径", en: "Mastery Path" },
+// Display labels (i18n keys) for capability-owned tool sections, keyed by the
+// backend's capability id. Falls back to the raw id for any unmapped capability.
+const CAPABILITY_LABELS: Record<string, string> = {
+  solve: "Deep Solve",
+  mastery: "settings.tools.capability.masteryPath",
 };
 
 export default function ToolsSettingsPage() {
@@ -122,7 +122,6 @@ export default function ToolsSettingsPage() {
 
   const sections = useMemo<ToolSection[] | null>(() => {
     if (!tools) return null;
-    const zh = language === "zh";
     // Buckets: toggleable (体验增强) first, then locked-on built-ins, then one
     // section per capability for its owned tools. Backend order is preserved
     // within each bucket (mirrors USER_TOGGLEABLE_TOOL_NAMES / the
@@ -146,36 +145,34 @@ export default function ToolsSettingsPage() {
     if (experience.length) {
       out.push({
         key: "experience",
-        label: zh ? "体验增强" : "Experience Enhancement",
-        hint: zh
-          ? "用户可选；按需为 chat agent 开启或关闭。"
-          : "User-toggleable. Switch on or off to shape the chat agent's behavior.",
+        label: t("Experience Enhancement"),
+        hint: t(
+          "User-toggleable. Switch on or off to shape the chat agent's behavior.",
+        ),
         tools: experience,
       });
     }
     if (builtin.length) {
       out.push({
         key: "builtin",
-        label: zh ? "内置工具" : "Built-in Tools",
-        hint: zh
-          ? "Chat agent 在需要时自动挂载，无需手动开关。"
-          : "Mounted automatically by the chat agent when needed. Not user-toggleable.",
+        label: t("Built-in Tools"),
+        hint: t(
+          "Mounted automatically by the chat agent when needed. Not user-toggleable.",
+        ),
         tools: builtin,
       });
     }
     for (const [cap, list] of capabilities) {
-      const label = CAPABILITY_LABELS[cap]?.[zh ? "zh" : "en"] ?? cap;
+      const label = CAPABILITY_LABELS[cap] ? t(CAPABILITY_LABELS[cap]) : cap;
       out.push({
         key: `cap:${cap}`,
-        label: zh ? `${label} · 能力工具` : `${label} · Capability Tools`,
-        hint: zh
-          ? "该能力的专属工具，仅在此能力运行时挂载。"
-          : "Tools specific to this capability; mounted only when it runs.",
+        label: t("{{label}} · Capability Tools", { label }),
+        hint: t("Tools specific to this capability; mounted only when it runs."),
         tools: list,
       });
     }
     return out;
-  }, [tools, language]);
+  }, [tools, t]);
 
   const filteredSections = useMemo<ToolSection[] | null>(() => {
     if (!sections) return null;
@@ -323,10 +320,7 @@ export default function ToolsSettingsPage() {
                     const isComingSoon = !!tool.coming_soon;
                     const isAvailable = tool.available !== false;
                     const availability = !isAvailable
-                      ? toolAvailabilityCopy(
-                          tool.unavailable_reason,
-                          language === "zh" ? "zh" : "en",
-                        )
+                      ? toolAvailabilityCopy(tool.unavailable_reason, t)
                       : null;
                     const isEnabled = toolEffectiveEnabled(
                       tool.toggleable ? enabled.has(tool.name) : true,
@@ -374,9 +368,7 @@ export default function ToolsSettingsPage() {
                                 )}
                                 {isComingSoon && (
                                   <span className="inline-flex items-center gap-1 rounded-full border border-[var(--border)] bg-[var(--muted)]/40 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-[var(--muted-foreground)]">
-                                    {language === "zh"
-                                      ? "敬请期待"
-                                      : "Coming soon"}
+                                    {t("Coming soon")}
                                   </span>
                                 )}
                                 {availability && !isComingSoon && (
@@ -402,9 +394,7 @@ export default function ToolsSettingsPage() {
                                       href={availability.href}
                                       className="font-medium underline underline-offset-2"
                                     >
-                                      {language === "zh"
-                                        ? "打开设置"
-                                        : "Open settings"}
+                                      {t("Open settings")}
                                     </Link>
                                   )}
                                 </p>
@@ -424,9 +414,7 @@ export default function ToolsSettingsPage() {
                                 onChange={() => {
                                   /* locked */
                                 }}
-                                label={
-                                  language === "zh" ? "敬请期待" : "Coming soon"
-                                }
+                                label={t("Coming soon")}
                               />
                             ) : !isAvailable ? (
                               <ToolToggle
